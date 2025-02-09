@@ -6,49 +6,18 @@ from time import time
 import matplotlib.pyplot as plt
 
 
-# --- Step 1: Define parameters ---
-S0 = 100.0     # Current stock price
-K = 105.0      # Strike price
-T = 30/252  # time (e.g. in years)
-r = 0.05  # risk free rate
-sigma = 0.2  # volatility
-trading_hours = 6.5  # Trading hours per day (typical US market)
-num_steps = int(30 * trading_hours)  # Number of hourly steps (6.5 hours * 30 days)
-dt = T / num_steps # Time step
-
-variance = 1 # Variance of the Normal Distribution being used.
-cutoff_factor = 4
-
-
-def payoff_func(spot, strike, rate, volatility, time, x):
-    payoffs = []
+def payoff_func(spot, strike, rate, volatility, t, x, dt):
     all_paths = []
+    stock_prices = []
 
     for W in x:
         price = [spot]
         price.append(price[-1] * np.exp(volatility * W + (rate - 0.5 * volatility ** 2) * dt))
         price_array = np.array(price)
         all_paths.append(price_array)
-        payoff = call_payoffs(np.expand_dims(price_array[1:], axis=0), strike, spot)[0]
-        payoffs.append(payoff)
+        stock_prices.append(price_array[-1])  # Just take the final stock price
 
-    if np.max(payoffs) == 0:
-        payoffs[0] = 1e-10
-    return np.array(payoffs)*np.exp(- rate * time), np.array(all_paths)
-
-
-
-def call_payoffs(paths, strike, spot):
-    spots = np.full((paths.shape[0], 1), spot)
-    paths = np.append(spots, paths, axis=1)
-    
-    means = scipy.stats.mstats.gmean(paths, axis=1)
-    
-    asian_payoffs = means - strike
-    asian_payoffs[asian_payoffs < 0] = 0
-
-    return asian_payoffs
-
+    return np.array(stock_prices), np.array(all_paths)
 
 
 def normal_dist(n, variance, cutoff_factor):
@@ -60,33 +29,29 @@ def normal_dist(n, variance, cutoff_factor):
     return [points, prob_renorm]
 
 
-
-
-def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1, variance=1.0, cutoff_factor=4, n_disc=4, n_pe=10):
-
-
+def Quantum_Monte_Carlo(T, dt, spot=100, strike=100, rate=0.05, volatility=0.2, t=1, variance=1.0, cutoff_factor=4, n_disc=4, n_pe=10):
     N_disc, N_pe = 2**n_disc, 2**n_pe
     
-    x, p = normal_dist(n_disc, T, cutoff_factor)
-    asian_payoff, paths = payoff_func(spot, strike, rate, volatility, time, x)
+    x, p = normal_dist(n_disc, variance, cutoff_factor)
+    stock_prices, paths = payoff_func(spot, strike, rate, volatility, t, x, dt)
     
-    # Calculate additional statistics
-    mean_price = np.mean(asian_payoff)
-    std_dev = np.std(asian_payoff)
+    # Calculate stock price statistics
+    mean_price = np.mean(stock_prices)
+    std_dev = np.std(stock_prices)
     
     # Calculate confidence interval
     z_score = 1.96  # 95% confidence level
-    margin_error = z_score * (std_dev / np.sqrt(len(asian_payoff)))
+    margin_error = z_score * (std_dev / np.sqrt(len(stock_prices)))
     confidence_interval = (mean_price - margin_error, mean_price + margin_error)
     
     # Calculate higher moments
-    skewness = np.mean(((asian_payoff - mean_price) / std_dev) ** 3)
-    kurtosis = np.mean(((asian_payoff - mean_price) / std_dev) ** 4) - 3
+    skewness = np.mean(((stock_prices - mean_price) / std_dev) ** 3)
+    kurtosis = np.mean(((stock_prices - mean_price) / std_dev) ** 4) - 3
     
-    # Calculate probability of profit and risk-reward metrics
-    prob_profit = np.mean(asian_payoff > mean_price)
-    max_loss = mean_price  # Maximum loss is premium paid
-    max_gain = np.max(asian_payoff) - mean_price
+    # Modify probability calculations for stock price
+    prob_increase = np.mean(stock_prices > spot)
+    max_loss = spot - np.min(stock_prices)
+    max_gain = np.max(stock_prices) - spot
     
     # Calculate path-dependent statistics
     max_drawdowns = []
@@ -132,10 +97,11 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
         test_rate = params.get('rate', rate)
         
         # Calculate price under stress scenario
-        stress_price = payoff_func(test_spot, strike, test_rate, test_vol, time, x)[0].mean()
+        stress_price = payoff_func(test_spot, strike, test_rate, test_vol, t, x, dt)[0].mean()
         stress_results[scenario] = stress_price
     
     
+
     # Calculate volatility clustering
     returns = np.array([np.diff(np.log(path)) for path in paths])
     
@@ -163,35 +129,37 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     theta_shift = 1/252  # One day shift
     
     # Delta calculation (dV/dS)
-    price_up = payoff_func(spot + delta_shift, strike, rate, volatility, time, x)[0].mean()
-    price_down = payoff_func(spot - delta_shift, strike, rate, volatility, time, x)[0].mean()
+    price_up = payoff_func(spot + delta_shift, strike, rate, volatility, t, x, dt)[0].mean()
+    price_down = payoff_func(spot - delta_shift, strike, rate, volatility, t, x, dt)[0].mean()
     delta = (price_up - price_down) / (2 * delta_shift)
     
+
     # Gamma calculation (d²V/dS²)
     gamma = (price_up - 2*mean_price + price_down) / (delta_shift**2)
     
     # Theta calculation (dV/dt)
-    if time > theta_shift:
-        price_next = payoff_func(spot, strike, rate, volatility, time - theta_shift, x)[0].mean()
+    if t > theta_shift:
+        price_next = payoff_func(spot, strike, rate, volatility, t - theta_shift, x, dt)[0].mean()
         theta = (price_next - mean_price) / theta_shift
     else:
+
         theta = 0
     
     print("\n--- Additional Inference Statistics ---")
-    print(f"Estimated Option Price: {mean_price:.4f}")
+    print(f"Estimated Stock Price: {mean_price:.4f}")
     if not np.isnan(std_dev):
         print(f"95% Confidence Interval: ({confidence_interval[0]:.4f}, {confidence_interval[1]:.4f})")
         print(f"Standard Deviation: {std_dev:.4f}")
         print(f"Skewness: {skewness:.4f}")
         print(f"Kurtosis: {kurtosis:.4f}")
-    print(f"Probability of Profit: {prob_profit:.2%}")
+    print(f"Probability of Increase: {prob_increase:.2%}")
     print(f"Risk-Reward Ratio: {risk_reward_ratio:.2f}")
 
     # Print Greeks
     print("\n--- Greeks ---")
     print(f"Delta: {delta:.4f}")
     print(f"Gamma: {gamma:.4f}")
-    if time > theta_shift:
+    if t > theta_shift:
         print(f"Theta (daily): {theta:.4f}")
 
     
@@ -210,8 +178,8 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     if autocorr != 0.0:
         print(f"\nVolatility Clustering (Return Autocorrelation): {autocorr:.4f}")
     
-    normalization_factor = max(asian_payoff)
-    my_payoff_func = lambda i: asian_payoff[i]/normalization_factor
+    normalization_factor = max(stock_prices)
+    my_payoff_func = lambda i: stock_prices[i]/normalization_factor
     
 
     target_wires = range(n_disc+1)
@@ -233,20 +201,118 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     
     estimated_value_qmc = (1 - np.cos(np.pi * phase_estimated)) / 2 * normalization_factor
     
+    
     # Plot the paths
     plt.figure(figsize=(10, 6))
-    time_points = np.linspace(0, time, 2)  # 2 points for start and end
+    t_points = np.linspace(0, t, 2)  # 2 points for start and end
     for path in paths:
-        plt.plot(time_points, path, alpha=0.5)
+        plt.scatter(t_points, path, alpha=0.5)
     plt.title('Monte Carlo Simulation Paths')
-    plt.xlabel('Time (years)')
+    plt.xlabel('t (years)')
     plt.ylabel('Stock Price')
-    plt.grid(True)
-    plt.show()
+    #plt.grid(True)
+    # Add mean path line
+    mean_path = np.mean([path for path in paths], axis=0)
+    plt.plot(t_points, mean_path, 'r-', linewidth=2, label='Mean Path')
+    
+    # Add strike price reference line
+    plt.axhline(y=strike, color='g', linestyle='--', alpha=0.5, label='Strike Price')
+    
+    # Add strike price annotation
+    plt.annotate(f'Strike: ${strike:.2f}', 
+                xy=(t_points[-1], strike),
+                xytext=(t_points[-1]+0.05, strike),
+                fontsize=8,
+                color='g')
+    
+    # Add confidence bands
+    std_path = np.std([path for path in paths], axis=0)
+    plt.fill_between(t_points, 
+                     mean_path - 2*std_path,
+                     mean_path + 2*std_path,
+                     alpha=0.2,
+                     color='gray',
+                     label='95% Confidence Band')
+    
+    # Enhance aesthetics
+    plt.title('Quantum Monte Carlo Simulation Paths', fontsize=12, pad=15)
+    plt.xlabel('Time (years)', fontsize=10)
+    plt.ylabel('Stock Price ($)', fontsize=10)
+    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    
+    # Add price annotations
+    plt.annotate(f'Start: ${spot:.2f}', 
+                xy=(t_points[0], spot),
+                xytext=(t_points[0]-0.1, spot+2),
+                fontsize=8)
 
-    return np.array(estimated_value_qmc)
+    plt.annotate(f'Mean End: ${mean_path[-1]:.2f}',
+                xy=(t_points[-1], mean_path[-1]),
+                xytext=(t_points[-1]-0.1, mean_path[-1]+2),
+                fontsize=8)
+                
+    plt.tight_layout()
 
-t1 = time()
-results = Quantum_Monte_Carlo(n_disc=6, n_pe=12)
-t2 = time()
-print('Results:', results, "time:", t2 - t1)
+    
+    # Save plot to SVG file
+    current_t = round(time())
+    #filename = f'src/static/images/graphs/QMC_{current_t}.svg'
+    filename = f'QMC_{current_t}.svg'
+    plt.savefig(filename, format='svg', bbox_inches='tight')
+    plt.close()
+
+
+
+   
+
+    # Create dictionary to store all statistics
+    stats_dict = {
+        'inference_statistics': {
+            'estimated_price': mean_price,
+            'confidence_interval': {
+                'lower': confidence_interval[0],
+                'upper': confidence_interval[1]
+            },
+            'standard_deviation': std_dev,
+            'skewness': skewness,
+            'kurtosis': kurtosis,
+            'probability_of_profit': prob_increase,
+            'risk_reward_ratio': risk_reward_ratio
+        },
+        'greeks': {
+            'delta': delta,
+            'gamma': gamma,
+            'theta': theta if t > theta_shift else None
+        },
+        'stress_test_results': {
+            scenario: {
+                'price': price,
+                'percent_change': ((price/mean_price - 1) * 100)
+            } for scenario, price in stress_results.items()
+        },
+        'path_dependent_stats': {
+            'average_max_drawdown': np.mean(max_drawdowns) if max_drawdowns else None,
+            'average_strike_crossings': np.mean(strike_crossings) if max_drawdowns else None,
+            'maximum_strike_crossings': np.max(strike_crossings) if max_drawdowns else None,
+            'volatility_clustering': autocorr if autocorr != 0.0 else None
+        }
+    }
+
+    return np.array(estimated_value_qmc), filename, stats_dict
+
+def Q_sim_start(S0, K, T, r, sigma ):
+
+    # --- Step 1: Define parameters ---
+    T = 5*T/252 # (typical US market)
+    trading_hours = 6.5  # Trading hours per day (typical US market)
+    num_steps = int(30 * trading_hours)  # Number of hourly steps (6.5 hours * 30 days)
+    dt = T / num_steps # t step
+
+    
+    results, filename, stats = Quantum_Monte_Carlo(n_disc=6, n_pe=12, T=T, dt=dt, spot=S0, strike=K)
+    return filename, stats
+
+
+
+if __name__ == "__main__":
+    print(Q_sim_start(100, 105, 4, 0.05, 0.2))
