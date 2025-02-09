@@ -72,7 +72,7 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     normalization_factor = max(asian_payoff)
     my_payoff_func = lambda i: asian_payoff[i]/normalization_factor
     
-    # Plot the paths
+    # Plot the paths and save to PNG
     plt.figure(figsize=(10, 6))
     time_points = np.linspace(0, time, 2)  # 2 points for start and end
     for path in paths:
@@ -81,7 +81,8 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     plt.xlabel('Time (years)')
     plt.ylabel('Stock Price')
     plt.grid(True)
-    plt.show()
+    plt.savefig('monte_carlo_paths.png', dpi=300, bbox_inches='tight')
+    plt.close()  # Close the figure to free memory
 
 
     target_wires = range(n_disc+1)
