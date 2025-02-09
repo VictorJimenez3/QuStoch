@@ -30,7 +30,7 @@
     <!-- Header -->
     <header class="bg-capital-one-red text-white p-4 shadow-lg">
       <div class="max-w-6xl mx-auto">
-        <h1 class="text-2xl font-bold">Stock Analytics</h1>
+        <h1 class="text-2xl font-bold">QuStoch-- Quantum Stochastic Analysis</h1>
       </div>
     </header>
 
@@ -49,32 +49,93 @@
                      focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
             />
             <button id="enterButton" class="p-4 bg-capital-one-red rounded-lg hover:bg-red-600">
-              Enter
+              Lookup Stock
             </button>
           </div>
-          <!-- Stats Grid Placeholder -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div
-            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
-          >
-            <h3 class="text-capital-one-light-gray text-lg mb-2">Price</h3>
-            <div class="text-2xl font-bold">--</div>
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+            >
+              <h3 class="text-capital-one-light-gray text-lg mb-2">Price</h3>
+              <div id="stock-price" class="text-2xl font-bold">--</div>
+            </div>
+            <div
+              class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+            >
+              <h3 class="text-capital-one-light-gray text-lg mb-2">Volume</h3>
+              <div id="stock-volume" class="text-2xl font-bold">--</div>
+            </div>
+            <div
+              class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+            >
+              <h3 class="text-capital-one-light-gray text-lg mb-2">Historical Volitility</h3>
+              <div id="volitility" class="text-2xl font-bold">--</div>
+            </div>
           </div>
-          <div
-            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
-          >
-            <h3 class="text-capital-one-light-gray text-lg mb-2">Volume</h3>
-            <div class="text-2xl font-bold">--</div>
-          </div>
-          <div
-            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
-          >
-            <h3 class="text-capital-one-light-gray text-lg mb-2">Market Cap</h3>
-            <div class="text-2xl font-bold">--</div>
+
+          <!-- New Two-Column Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            <!-- Left Column -->
+            <div class="space-y-4">
+                <h3>Enter Strike Price:</h3>
+              <input
+                type="number"
+                id="strike-price"
+                placeholder="Enter value..."
+                class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                       focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+              />
+              <h3>Time To Maturity</h3>
+              <input
+                type="number"
+                id="maturity-time"
+                placeholder="Enter value..."
+                class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                       focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+              />
+
+              <h3>Time-Step</h3>
+              <input
+                type="time-step"
+                id="maturity-time"
+                placeholder="Enter value..."
+                class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                       focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+              />
+              
+              <button 
+                id="submitButton"
+                class="w-full p-4 bg-capital-one-red rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Start Simulation
+              </button>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-4">
+              <!-- Graph Container -->
+              <div class="bg-capital-one-dark-blue/50 rounded-xl border border-capital-one-light-gray/20 aspect-[16/9]">
+                <!-- Placeholder for graph -->
+                <div class="w-full h-full flex items-center justify-center text-capital-one-light-gray">
+                  Graph Placeholder
+                </div>
+              </div>
+              
+              <!-- JSON Display Area -->
+              <div class="bg-capital-one-dark-blue/50 rounded-xl border border-capital-one-light-gray/20 h-48 flex">
+                <h2></h2>
+                <pre class="p-4 w-full overflow-y-auto text-capital-one-light-gray text-sm">
+                  <code id="jsonDisplay">
+                    {
+                      "status": "..."
+                    }
+                  </code>
+                </pre>
+              </div>
+            </div>
           </div>
         </div>
-        </div>
-        <!-- You can add more content (graphs, stats grid, etc.) here -->
       </div>
     </main>
 
@@ -97,8 +158,26 @@
 
       // Optionally, listen for responses from the backend.
       socket.on("search_response", (data) => {
-        console.log("Search response received:", data.result);
-        // You can update the UI with the response data here.
+        console.log("Search response received:", data);  // data is the result object directly
+        if(data.status != "success") {
+            console.log("invalid ticker"); //TODO implement onscreen text
+        } else {
+            document.getElementById("stock-price").textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.latest_price);
+            document.getElementById("stock-volume").textContent = data.latest_volume.toFixed(2);
+            document.getElementById("volitility").textContent = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2 }).format(data.historical_volatility);
+            
+        }
+      });
+
+      // Optionally, listen for responses from the backend.
+      socket.on("backend_simulaton_event", (data) => {
+        console.log("simulation response received:", data);  // data is the result object directly
+        if(data.status != "success") {
+            console.log("something went wrong in the simulation"); //TODO implement onscreen text
+        } else {
+            //TODO, update with backend stuff
+            document.getElementById('jsonDisplay').textContent = JSON.stringify(data, null, 2);
+        }
       });
     </script>
   </body>
