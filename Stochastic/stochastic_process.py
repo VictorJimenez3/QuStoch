@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 T = 1  # Total time
-N = 1000000 # Number of time steps
+N = 1000 # Number of time steps
 dt = T / N  # Time step size
 num_paths = 5  # Number of sample paths
 
