@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt
 # --- Step 1: Define parameters ---
 S0 = 100.0     # Current stock price
 K = 105.0      # Strike price
-T = 1  # time (e.g. in years)
+T = 30/252  # time (e.g. in years)
 r = 0.05  # risk free rate
 sigma = 0.2  # volatility
-num_steps = 12 # Number of steps
+trading_hours = 6.5  # Trading hours per day (typical US market)
+num_steps = int(30 * trading_hours)  # Number of hourly steps (6.5 hours * 30 days)
 dt = T / num_steps # Time step
 
 variance = 1 # Variance of the Normal Distribution being used.
@@ -52,8 +53,8 @@ def call_payoffs(paths, strike, spot):
 
 def normal_dist(n, variance, cutoff_factor):
     dim = 2 ** n
-    cutoff_tmp = cutoff_factor * np.sqrt(variance)
-    points = np.linspace(-cutoff_tmp, cutoff_tmp, num=dim)
+    points = np.random.normal(0, np.sqrt(variance), dim)
+    points = np.clip(points, -cutoff_factor * np.sqrt(variance), cutoff_factor * np.sqrt(variance))
     prob = (1 / np.sqrt(2 * np.pi * variance)) * np.exp(- 0.5 * points ** 2 / variance)
     prob_renorm = prob / np.sum(prob)
     return [points, prob_renorm]
@@ -75,12 +76,13 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     plt.figure(figsize=(10, 6))
     time_points = np.linspace(0, time, 2)  # 2 points for start and end
     for path in paths:
-        plt.plot(time_points, path, alpha=0.5)
+        plt.scatter(time_points, path, alpha=0.5)
     plt.title('Monte Carlo Simulation Paths')
     plt.xlabel('Time (years)')
     plt.ylabel('Stock Price')
     plt.grid(True)
     plt.show()
+
 
     target_wires = range(n_disc+1)
     estimation_wires = range(n_disc+1, n_disc+n_pe+1)
@@ -104,6 +106,6 @@ def Quantum_Monte_Carlo(spot=100, strike=100, rate=0.05, volatility=0.2, time=1,
     return np.array(estimated_value_qmc)
 
 t1 = time()
-results = Quantum_Monte_Carlo()
+results = Quantum_Monte_Carlo(n_disc=6, n_pe=12)
 t2 = time()
 print('Results:', results, "time:", t2 - t1)
