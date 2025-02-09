@@ -238,7 +238,7 @@ def Quantum_Monte_Carlo(T, dt, spot=100, strike=100, rate=0.05, volatility=0.2, 
     plt.title('Quantum Monte Carlo Simulation Paths', fontsize=12, pad=15)
     plt.xlabel('Time (years)', fontsize=10)
     plt.ylabel('Stock Price ($)', fontsize=10)
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    plt.legend(loc='upper left')
     
     # Add price annotations
     plt.annotate(f'Start: ${spot:.2f}', 
@@ -256,45 +256,40 @@ def Quantum_Monte_Carlo(T, dt, spot=100, strike=100, rate=0.05, volatility=0.2, 
     
     # Save plot to SVG file
     current_t = round(time())
-    #filename = f'src/static/images/graphs/QMC_{current_t}.svg'
-    filename = f'QMC_{current_t}.svg'
-    plt.savefig(filename, format='svg', bbox_inches='tight')
+    filename = f"QMC_{current_t}.svg"
+    plt.savefig(f"src/static/images/graphs/{filename}", format='svg', bbox_inches='tight')
     plt.close()
-
-
-
-   
 
     # Create dictionary to store all statistics
     stats_dict = {
         'inference_statistics': {
-            'estimated_price': mean_price,
+            'estimated_price': round(float(mean_price), 2),
             'confidence_interval': {
                 'lower': confidence_interval[0],
                 'upper': confidence_interval[1]
             },
-            'standard_deviation': std_dev,
-            'skewness': skewness,
-            'kurtosis': kurtosis,
-            'probability_of_profit': prob_increase,
-            'risk_reward_ratio': risk_reward_ratio
+            'standard_deviation': float(std_dev),
+            'skewness': float(skewness),
+            'kurtosis': float(kurtosis),
+            'probability_of_profit': float(prob_increase),
+            'risk_reward_ratio': float(risk_reward_ratio)
         },
         'greeks': {
-            'delta': delta,
-            'gamma': gamma,
-            'theta': theta if t > theta_shift else None
+            'delta': float(delta),
+            'gamma': float(gamma),
+            'theta': float(theta) if t > theta_shift else None
         },
         'stress_test_results': {
             scenario: {
-                'price': price,
-                'percent_change': ((price/mean_price - 1) * 100)
+                'price': float(price),
+                'percent_change': float(((price/mean_price - 1) * 100))
             } for scenario, price in stress_results.items()
         },
         'path_dependent_stats': {
-            'average_max_drawdown': np.mean(max_drawdowns) if max_drawdowns else None,
-            'average_strike_crossings': np.mean(strike_crossings) if max_drawdowns else None,
-            'maximum_strike_crossings': np.max(strike_crossings) if max_drawdowns else None,
-            'volatility_clustering': autocorr if autocorr != 0.0 else None
+            'average_max_drawdown': float(np.mean(max_drawdowns)) if max_drawdowns else None,
+            'average_strike_crossings': float(np.mean(strike_crossings)) if max_drawdowns else None,
+            'maximum_strike_crossings': float(np.max(strike_crossings)) if max_drawdowns else None,
+            'volatility_clustering': float(autocorr) if autocorr != 0.0 else None
         }
     }
 
@@ -314,5 +309,5 @@ def Q_sim_start(S0, K, T, r, sigma ):
 
 
 
-if __name__ == "__main__":
-    print(Q_sim_start(100, 105, 4, 0.05, 0.2))
+# if __name__ == "__main__":
+#     print(Q_sim_start(100, 105, 4, 0.05, 0.2))
