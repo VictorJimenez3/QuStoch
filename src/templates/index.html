@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Analytics Dashboard</title>
+    <!-- Tailwind CSS (using CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Optionally, configure Tailwind with your custom colors and fonts.
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'capital-one-dark-blue': '#223d5b',
+              'capital-one-red': '#b8141a',
+              'capital-one-light-gray': '#F1F2F3',
+            },
+            fontFamily: {
+              sans: ['Inter', 'Arial', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  </head>
+  <body class="bg-capital-one-dark-blue text-white font-sans">
+    <!-- Header -->
+    <header class="bg-capital-one-red text-white p-4 shadow-lg">
+      <div class="max-w-6xl mx-auto">
+        <h1 class="text-2xl font-bold">QuStoch-- Quantum Stochastic Analysis</h1>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="min-h-screen p-8">
+      <div class="max-w-6xl mx-auto space-y-8">
+        <!-- Search Section -->
+        <div class="space-y-4">
+          <h2 class="text-2xl font-semibold">Search Stock Analytics</h2>
+          <div class="relative flex space-x-2">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search a stock..."
+              class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                     focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+            />
+            <button id="enterButton" class="p-4 bg-capital-one-red rounded-lg hover:bg-red-600">
+              Lookup Stock
+            </button>
+          </div>
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+            >
+              <h3 class="text-capital-one-light-gray text-lg mb-2">Price</h3>
+              <div id="stock-price" class="text-2xl font-bold">--</div>
+            </div>
+            <div
+              class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+            >
+              <h3 class="text-capital-one-light-gray text-lg mb-2">Volume</h3>
+              <div id="stock-volume" class="text-2xl font-bold">--</div>
+            </div>
+            <div
+              class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+            >
+              <h3 class="text-capital-one-light-gray text-lg mb-2">Historical Volatility</h3>
+              <div id="volatility" class="text-2xl font-bold">--</div>
+            </div>
+          </div>
+
+          <!-- New Two-Column Layout -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            <!-- Left Column -->
+            <div class="space-y-4">
+                <h3>Enter Strike Price:</h3>
+              <input
+                type="number"
+                id="strike-price"
+                placeholder="(dollars)"
+                class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                       focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+              />
+              <h3>Time To Maturity</h3>
+              <input
+                type="number"
+                id="maturity-time"
+                placeholder="(weeks)"
+                class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                       focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+              />
+              
+              <button 
+                id="submitButton"
+                class="w-full p-4 bg-capital-one-red rounded-lg hover:bg-red-600 transition-colors"
+              >
+                Start Simulation
+              </button>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-4">
+              <!-- Graph Container -->
+              <div class="bg-capital-one-dark-blue/50 rounded-xl border border-capital-one-light-gray/20 aspect-[16/9]">
+                <!-- Placeholder for graph -->
+                <div id="image_placeholder"></div>
+              </div>
+              
+              <!-- JSON Display Area -->
+              <div class="bg-capital-one-dark-blue/50 rounded-xl border border-capital-one-light-gray/20 h-48 flex">
+                <h2></h2>
+                <pre class="p-4 w-full overflow-y-auto text-capital-one-light-gray text-sm">
+                  <code id="jsonDisplay">
+                    {
+                      "status": "..."
+                    }
+                  </code>
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Connect to the Socket.IO server.
+      const socket = io();
+ 
+      // Get references to the DOM elements.
+      const searchInput = document.getElementById("searchInput");
+      const enterButton = document.getElementById("enterButton");
+      
+      const strikePriceInput = document.getElementById("strike-price");
+      const maturityTimeInput = document.getElementById("maturity-time");
+      const submitButtonInput = document.getElementById("submitButton");
+
+      // When the "Enter" button is clicked...
+      enterButton.addEventListener("click", () => {
+        const searchText = searchInput.value;
+        if (searchText.trim() !== "") {
+          // Emit the 'search_event' with the input text.
+          socket.emit("search_event", { search_text: searchText });
+        }
+      });
+
+      submitButton.addEventListener("click", () => {
+        const stockTicker = searchInput.value;
+        if(maturityTimeInput.value.trim() !== "") {
+            if(strikePriceInput.value.trim() !== "") {
+                socket.emit("backend_simulaton_event", {
+                    striking_price: strikePriceInput.value,
+                    maturity_time: maturityTimeInput.value,
+                    stock_ticker: stockTicker
+                });
+            } else {
+                alert("Strike price not specified! Please complete!");
+            }
+        } else{
+            alert("Time to maturity (in weeks), not completed!");
+        }
+      })
+
+      // Optionally, listen for responses from the backend.
+      socket.on("search_response", (data) => {
+        console.log("Search response received:", data);  // data is the result object directly
+        if(data.status != "success") {
+            alert("invalid ticker"); //TODO implement onscreen text
+        } else {
+            document.getElementById("stock-price").textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.latest_price);
+            document.getElementById("stock-volume").textContent = data.latest_volume.toFixed(2);
+            document.getElementById("volatility").textContent = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2 }).format(data.historical_volatility);
+            
+        }
+      });
+
+      // Optionally, listen for responses from the backend.
+      socket.on("backend_simulation_event", (data) => {
+        console.log("simulation response received:", data);  // data is the result object directly
+        
+        if(data.status != "success") {
+            alert("something went wrong in the simulation"); //TODO implement onscreen text
+        } else {
+            // Assuming `data.image_name` contains the image file name
+            var imageUrl = "{{url_for('static', filename='images/graphs/')}}" + data.graph_path;
+
+            var img = '<img ' +
+                      'src="' + imageUrl + '" ' +
+                      'alt="Graph Image" ' +
+                      'class="w-full h-full object-cover" ' +
+                      'style="width: 100%; height: 100%;" ' +
+                      '/>';
+
+            document.getElementById("image_placeholder").innerHTML = img;
+            document.getElementById('jsonDisplay').textContent = JSON.stringify(data.detailed_output, null, 2);
+        }
+
+      });
+    </script>
+  </body>
+</html>
