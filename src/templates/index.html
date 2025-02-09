@@ -1,105 +1,105 @@
 <!DOCTYPE html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        .container {
-            display: flex;
-            min-height: 100vh;
-            gap: 2rem;
-            padding: 2rem;
-        }
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Analytics Dashboard</title>
+    <!-- Tailwind CSS (using CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Optionally, configure Tailwind with your custom colors and fonts.
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'capital-one-dark-blue': '#223d5b',
+              'capital-one-red': '#b8141a',
+              'capital-one-light-gray': '#F1F2F3',
+            },
+            fontFamily: {
+              sans: ['Inter', 'Arial', 'sans-serif'],
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Socket.IO client library -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  </head>
+  <body class="bg-capital-one-dark-blue text-white font-sans">
+    <!-- Header -->
+    <header class="bg-capital-one-red text-white p-4 shadow-lg">
+      <div class="max-w-6xl mx-auto">
+        <h1 class="text-2xl font-bold">Stock Analytics</h1>
+      </div>
+    </header>
 
-        .column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        .search-row {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .search-input {
-            flex: 3;
-            padding: 0.5rem;
-        }
-
-        .submit-btn {
-            flex: 1;
-            padding: 0.5rem;
-        }
-
-        .stock-data {
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 4px;
-            min-height: 200px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 0.5rem;
-        }
-
-        .amount-input {
-            padding: 0.5rem;
-        }
-
-        .right-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .stock-image {
-            max-width: 80%;
-            height: auto;
-        }
-
-        .price-range {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 2rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="column">
-            <div class="search-row">
-                <input type="text" class="search-input" placeholder="Enter stock symbol...">
-                <button class="submit-btn">Submit</button>
-            </div>
-            <div class="stock-data">
-                <!-- Stock data will be displayed here -->
-            </div>
-            <div class="action-buttons">
-                <button class="action-btn">BUY</button>
-                <button class="action-btn">SELL</button>
-            </div>
-            <input type="number" class="amount-input" placeholder="Enter dollar amount...">
+    <!-- Main Content -->
+    <main class="min-h-screen p-8">
+      <div class="max-w-6xl mx-auto space-y-8">
+        <!-- Search Section -->
+        <div class="space-y-4">
+          <h2 class="text-2xl font-semibold">Search Stock Analytics</h2>
+          <div class="relative flex space-x-2">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search a stock..."
+              class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
+                     focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
+            />
+            <button id="enterButton" class="p-4 bg-capital-one-red rounded-lg hover:bg-red-600">
+              Enter
+            </button>
+          </div>
+          <!-- Stats Grid Placeholder -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div
+            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+          >
+            <h3 class="text-capital-one-light-gray text-lg mb-2">Price</h3>
+            <div class="text-2xl font-bold">--</div>
+          </div>
+          <div
+            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+          >
+            <h3 class="text-capital-one-light-gray text-lg mb-2">Volume</h3>
+            <div class="text-2xl font-bold">--</div>
+          </div>
+          <div
+            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+          >
+            <h3 class="text-capital-one-light-gray text-lg mb-2">Market Cap</h3>
+            <div class="text-2xl font-bold">--</div>
+          </div>
         </div>
-        
-        <div class="column">
-            <div class="right-content">
-                <img src="placeholder.jpg" alt="Stock Chart" class="stock-image">
-                <div class="price-range">
-                    <span>Low: $10.99</span>
-                    <span>High: $153.99</span>
-                </div>
-            </div>
         </div>
-    </div>
-</body>
+        <!-- You can add more content (graphs, stats grid, etc.) here -->
+      </div>
+    </main>
+
+    <script>
+      // Connect to the Socket.IO server.
+      const socket = io();
+
+      // Get references to the DOM elements.
+      const searchInput = document.getElementById("searchInput");
+      const enterButton = document.getElementById("enterButton");
+
+      // When the "Enter" button is clicked...
+      enterButton.addEventListener("click", () => {
+        const searchText = searchInput.value;
+        if (searchText.trim() !== "") {
+          // Emit the 'search_event' with the input text.
+          socket.emit("search_event", { search_text: searchText });
+        }
+      });
+
+      // Optionally, listen for responses from the backend.
+      socket.on("search_response", (data) => {
+        console.log("Search response received:", data.result);
+        // You can update the UI with the response data here.
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+<!-- Stats Grid Placeholder -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div
+            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+          >
+            <h3 class="text-capital-one-light-gray text-lg mb-2">Price</h3>
+            <div class="text-2xl font-bold">--</div>
+          </div>
+          <div
+            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+          >
+            <h3 class="text-capital-one-light-gray text-lg mb-2">Volume</h3>
+            <div class="text-2xl font-bold">--</div>
+          </div>
+          <div
+            class="bg-capital-one-dark-blue/50 p-6 rounded-xl border border-capital-one-light-gray/20 hover:bg-capital-one-dark-blue/70 transition-colors backdrop-blur-sm"
+          >
+            <h3 class="text-capital-one-light-gray text-lg mb-2">Market Cap</h3>
+            <div class="text-2xl font-bold">--</div>
+          </div>
+        </div>
