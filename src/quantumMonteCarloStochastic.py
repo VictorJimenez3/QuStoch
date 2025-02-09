@@ -238,7 +238,7 @@ def Quantum_Monte_Carlo(T, dt, spot=100, strike=100, rate=0.05, volatility=0.2, 
     plt.title('Quantum Monte Carlo Simulation Paths', fontsize=12, pad=15)
     plt.xlabel('Time (years)', fontsize=10)
     plt.ylabel('Stock Price ($)', fontsize=10)
-    plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    plt.legend(loc='upper left')
     
     # Add price annotations
     plt.annotate(f'Start: ${spot:.2f}', 
