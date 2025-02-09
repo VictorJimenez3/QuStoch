@@ -36,8 +36,15 @@ def run_monte_carlo_iteration(S0, K, T, r, sigma, num_sims=10_000, num_steps=195
     # Calculate various statistics
     mean_price = np.mean(option_prices)
     std_dev = np.std(option_prices)
-    skewness = np.mean(((option_prices - mean_price) / std_dev) ** 3)
-    kurtosis = np.mean(((option_prices - mean_price) / std_dev) ** 4) - 3
+    
+    # Handle zero standard deviation case
+    if std_dev == 0:
+        skewness = 0
+        kurtosis = 0
+    else:
+        skewness = np.mean(((option_prices - mean_price) / std_dev) ** 3)
+        kurtosis = np.mean(((option_prices - mean_price) / std_dev) ** 4) - 3
+    
     var_95 = np.percentile(option_prices, 5)
     es_95 = option_prices[option_prices <= var_95].mean()
     
