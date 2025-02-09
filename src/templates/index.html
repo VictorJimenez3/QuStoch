@@ -74,14 +74,37 @@
           </div>
         </div>
         </div>
-        <!-- You can add more content (graphs, stats grid, etc.) here -->
+        <!-- You can add more content (graphs, stats grid, etc.) here 
+        <main class="min-h-screen p-8">
+          <div class="max-w-6xl mx-auto space-y-8">
+            <h2 class="text-2xl font-semibold">Stock Images</h2>
+            <button id="loadImages" class="p-4 bg-capital-one-red rounded-lg hover:bg-red-600">
+              Load Images
+            </button>
+    
+            <div class="grid grid-cols-2 gap-4">
+              <img id="image1" src="" class="w-full rounded-lg shadow-lg" alt="Stock Image 1" />
+              <img id="image2" src="" class="w-full rounded-lg shadow-lg" alt="Stock Image 2" />
+            </div>
+          </div>
+        </main>-->
+        <main class="min-h-screen p-8">
+          <div class="max-w-6xl mx-auto space-y-8">
+            <h2 class="text-2xl font-semibold">Stock Images</h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <img id="image1" src="" class="w-full rounded-lg shadow-lg hidden" alt="Stock Image 1" />
+              <img id="image2" src="" class="w-full rounded-lg shadow-lg hidden" alt="Stock Image 2" />
+            </div>
+          </div>
+        </main>
       </div>
     </main>
 
     <script>
       // Connect to the Socket.IO server.
       const socket = io();
-
+ 
       // Get references to the DOM elements.
       const searchInput = document.getElementById("searchInput");
       const enterButton = document.getElementById("enterButton");
@@ -99,6 +122,47 @@
       socket.on("search_response", (data) => {
         console.log("Search response received:", data.result);
         // You can update the UI with the response data here.
+      });
+      /*images
+      
+      const loadImagesButton = document.getElementById("loadImages");
+      const image1 = document.getElementById("image1");
+      const image2 = document.getElementById("image2");
+
+      // When button is clicked, request images from backend
+      loadImagesButton.addEventListener("click", () => {
+        console.log("Requesting images from server...");
+        socket.emit("request_images");
+      });
+
+      // Listen for the 'receive_images' event
+      socket.on("receive_images", (data) => {
+        console.log("Received image URLs:", data);
+        image1.src = data.image1;
+        image2.src = data.image2;
+      });
+      */ 
+      const image1 = document.getElementById("image1");
+      const image2 = document.getElementById("image2");
+
+      // Listen for new images from the backend
+      socket.on("receive_images", (data) => {
+        console.log("Received image update:", data);
+
+        // Update images if they exist
+        if (data.image1) {
+          image1.src = data.image1;
+          image1.classList.remove("hidden");
+        } else {
+          image1.classList.add("hidden");
+        }
+
+        if (data.image2) {
+          image2.src = data.image2;
+          image2.classList.remove("hidden");
+        } else {
+          image2.classList.add("hidden");
+        }
       });
     </script>
   </body>

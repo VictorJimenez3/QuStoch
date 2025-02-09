@@ -1,3 +1,5 @@
+import os
+import time
 from flask import Flask, render_template
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
@@ -19,6 +21,7 @@ def handle_search_event(data):
 
 def process_search(query):
     return f"Processed query: {query.upper()}"
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
