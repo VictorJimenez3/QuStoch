@@ -35,5 +35,6 @@ def handle_simulation_submission(data):
     
     emit("backend_simulation_event", data)
 
+
 if __name__ == '__main__':
     socketio.run(app, debug=True)
