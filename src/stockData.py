@@ -84,6 +84,7 @@ def get_stock_info(symbol):
     Returns:
         A dictionary with the stock information, or None if data retrieval fails.
     """
+    
     df = get_stock_daily_data(symbol)
     if df is None:
         return None

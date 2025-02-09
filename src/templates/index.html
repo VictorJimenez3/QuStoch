@@ -108,9 +108,7 @@
               <!-- Graph Container -->
               <div class="bg-capital-one-dark-blue/50 rounded-xl border border-capital-one-light-gray/20 aspect-[16/9]">
                 <!-- Placeholder for graph -->
-                <div class="w-full h-full flex items-center justify-center text-capital-one-light-gray">
-                  Graph Placeholder
-                </div>
+                <div id="image_placeholder"></div>
               </div>
               
               <!-- JSON Display Area -->
@@ -137,6 +135,10 @@
       // Get references to the DOM elements.
       const searchInput = document.getElementById("searchInput");
       const enterButton = document.getElementById("enterButton");
+      
+      const strikePriceInput = document.getElementById("strike-price");
+      const maturityTimeInput = document.getElementById("maturity-time");
+      const submitButtonInput = document.getElementById("submitButton");
 
       // When the "Enter" button is clicked...
       enterButton.addEventListener("click", () => {
@@ -146,6 +148,23 @@
           socket.emit("search_event", { search_text: searchText });
         }
       });
+
+      submitButton.addEventListener("click", () => {
+        const stockTicker = searchInput.value;
+        if(maturityTimeInput.value.trim() !== "") {
+            if(strikePriceInput.value.trim() !== "") {
+                socket.emit("backend_simulaton_event", {
+                    striking_price: strikePriceInput.value,
+                    maturity_time: maturityTimeInput.value,
+                    stock_ticker: stockTicker
+                });
+            } else {
+                alert("Strike price not specified! Please complete!");
+            }
+        } else{
+            alert("Time to maturity (in weeks), not completed!");
+        }
+      })
 
       // Optionally, listen for responses from the backend.
       socket.on("search_response", (data) => {
@@ -161,15 +180,26 @@
       });
 
       // Optionally, listen for responses from the backend.
-      socket.on("backend_simulaton_event", (data) => {
+      socket.on("backend_simulation_event", (data) => {
         console.log("simulation response received:", data);  // data is the result object directly
+        
         if(data.status != "success") {
             alert("something went wrong in the simulation"); //TODO implement onscreen text
         } else {
-            //TODO, update with backend stuff
-            
+            // Assuming `data.image_name` contains the image file name
+            var imageUrl = "{{url_for('static', filename='images/graphs/')}}" + data.graph_path;
+
+            var img = '<img ' +
+                      'src="' + imageUrl + '" ' +
+                      'alt="Graph Image" ' +
+                      'class="w-full h-full object-cover" ' +
+                      'style="width: 400px; height: 300px;" ' +
+                      '/>';
+
+            document.getElementById("image_placeholder").innerHTML = img;
             document.getElementById('jsonDisplay').textContent = JSON.stringify(data.detailed_output, null, 2);
         }
+
       });
     </script>
   </body>

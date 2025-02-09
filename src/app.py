@@ -1,7 +1,11 @@
+#packages
 from flask import Flask, render_template, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+
+#files
 from stockData import get_stock_info
+from quantumMonteCarloStochastic import Q_sim_start
 
 app = Flask(__name__)
 CORS(app)
@@ -27,13 +31,45 @@ def handle_search_event(data):
 
 @socketio.on("backend_simulaton_event")
 def handle_simulation_submission(data):
-    data = {
-        "image_path" : None,
-        "detailed_output" : None,
-        
+    
+    print(data)
+    
+    stock_data = get_stock_info(data["stock_ticker"])
+    
+    print(stock_data)
+
+    if not all((stock_data["latest_price"], #some data is None
+        data["striking_price"],
+        data["maturity_time"],
+        stock_data["risk_free_return"],
+        stock_data["historical_volatility"])):
+        print("NONETYPE FOUND: ", stock_data["latest_price"],
+        data["striking_price"],
+        data["maturity_time"],
+        stock_data["risk_free_return"],
+        stock_data["historical_volatility"])
+
+        return
+
+    graph_path, detailed_output = Q_sim_start(
+        round(float(stock_data["latest_price"]), 2),
+        round(float(data["striking_price"].replace("$", "")), 2),
+        int(data["maturity_time"]),
+        round(float(stock_data["risk_free_return"]), 2),
+        round(float(stock_data["historical_volatility"]), 2)
+    )
+    
+    returned_data = {
+        "graph_path" : graph_path,
+        "detailed_output" : detailed_output,
+        "status" : "success"
     }
     
-    emit("backend_simulation_event", data)
+    #TODO status unsucessful
+
+    print("sending....")
+
+    emit("backend_simulation_event", returned_data)
 
 
 if __name__ == '__main__':
