@@ -271,7 +271,7 @@ def Quantum_Monte_Carlo(T, dt, spot=100, strike=100, rate=0.05, volatility=0.2, 
             'standard_deviation': float(std_dev),
             'skewness': float(skewness),
             'kurtosis': float(kurtosis),
-            'probability_of_profit': float(prob_profit),
+            'probability_of_profit': float(prob_increase),
             'risk_reward_ratio': float(risk_reward_ratio)
         },
         'greeks': {
