@@ -21,7 +21,7 @@ S = np.zeros((num_steps + 1, num_sims))
 def run_monte_carlo_iteration(S0, K, T, r, sigma, num_sims=10_000, num_steps=195):
     """Run a single Monte Carlo simulation and return key metrics"""
     dt = T / num_steps
-    S[0, :] = S0
+    S[0, :] = S0 
     
     # Simulate paths
     for t in range(1, num_steps + 1):
