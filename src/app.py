@@ -27,7 +27,13 @@ def handle_search_event(data):
 
 @socketio.on("backend_simulaton_event")
 def handle_simulation_submission(data):
-    pass
+    data = {
+        "image_path" : None,
+        "detailed_output" : None,
+        
+    }
+    
+    emit("backend_simulation_event", data)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

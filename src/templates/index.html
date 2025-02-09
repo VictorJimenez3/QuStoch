@@ -82,7 +82,7 @@
               <input
                 type="number"
                 id="strike-price"
-                placeholder="Enter value..."
+                placeholder="(dollars)"
                 class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
                        focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
               />
@@ -90,16 +90,7 @@
               <input
                 type="number"
                 id="maturity-time"
-                placeholder="Enter value..."
-                class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
-                       focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
-              />
-
-              <h3>Time-Step</h3>
-              <input
-                type="time-step"
-                id="maturity-time"
-                placeholder="Enter value..."
+                placeholder="(weeks)"
                 class="w-full p-4 rounded-lg bg-capital-one-light-gray/10 text-white placeholder-capital-one-light-gray
                        focus:outline-none focus:ring-2 focus:ring-capital-one-red transition-all duration-200"
               />
@@ -160,7 +151,7 @@
       socket.on("search_response", (data) => {
         console.log("Search response received:", data);  // data is the result object directly
         if(data.status != "success") {
-            console.log("invalid ticker"); //TODO implement onscreen text
+            alert("invalid ticker"); //TODO implement onscreen text
         } else {
             document.getElementById("stock-price").textContent = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(data.latest_price);
             document.getElementById("stock-volume").textContent = data.latest_volume.toFixed(2);
@@ -173,10 +164,11 @@
       socket.on("backend_simulaton_event", (data) => {
         console.log("simulation response received:", data);  // data is the result object directly
         if(data.status != "success") {
-            console.log("something went wrong in the simulation"); //TODO implement onscreen text
+            alert("something went wrong in the simulation"); //TODO implement onscreen text
         } else {
             //TODO, update with backend stuff
-            document.getElementById('jsonDisplay').textContent = JSON.stringify(data, null, 2);
+            
+            document.getElementById('jsonDisplay').textContent = JSON.stringify(data.detailed_output, null, 2);
         }
       });
     </script>
