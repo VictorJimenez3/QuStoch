@@ -8,15 +8,16 @@ S0 = 100       # Initial stock price
 mu = -0.05      # Drift (expected return)
 sigma = 0.2    # Volatility
 T = 1          # Total time (in years)
-N = 10       # Number of time steps
+N = 12      # Number of time steps
 dt = T / N     # Time step size
+
 
 # Time vector
 t = np.linspace(0, T, N+1)
 
 # Generate Wiener process increments and cumulative sum
 #np.random.seed(42)  # For reproducibility
-dW = np.sqrt(dt) * np.random.randn(N)  # Random increments
+dW = np.sqrt(dt) * np.random.normal(size=N)  # Random increments
 W = np.cumsum(dW)  # Wiener process
 
 
