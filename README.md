@@ -1,84 +1,49 @@
-QuStoch: Quantum-Enhanced Stochastic Market Simulations
+# QuStoch: Quantum-Enhanced Stochastic Market Simulations
 
-Overview
+## Short Description
+QuStoch is a quantum-accelerated stock market simulator that integrates quantum superposition into Brownian motion models. By parallelizing stochastic paths at the quantum level, it offers a more efficient and comprehensive approach to simulating market dynamics compared to traditional Monte Carlo methods. Built as a prototype for quantum finance research, QuStoch explores the real-world potential of hybrid quantum-classical financial modeling.
 
-Traditional stock market simulations rely on classical stochastic models like Monte Carlo methods, which, while effective, can be computationally intensive and struggle to capture the full range of market dynamics. With advancements in quantum computing, we saw an opportunity to harness quantum superposition to simulate multiple stochastic states simultaneously.
+## Features
+- **Quantum-Powered Simulations**: Models multiple stock price trajectories simultaneously using quantum superposition.
+- **Enhanced Brownian Motion Modeling**: Encodes stochastic market behaviors directly into quantum circuits.
+- **Interactive Visualization**: Web dashboard for real-time simulation result exploration.
+- **Hybrid Processing Pipeline**: Merges quantum-generated data with classical statistical analysis.
 
-QuStoch integrates quantum algorithms into Brownian motion simulations, offering a more efficient and probabilistically accurate approach to financial modeling.
+## Tech Stack
+- **Quantum Computing**: Quantum circuits for stochastic modeling (Hadamard and controlled rotation gates).
+- **Python**: Backend computation, calibration against historical data.
+- **Flask, HTML/CSS/JavaScript**: Web frontend development.
+- **Matplotlib**: Interactive graphing of stock simulations.
 
-Features
+## Challenges and Solutions
+- **Efficient Quantum Simulation**: Mapped probability amplitudes carefully to design practical Brownian motion circuits.
+- **Quantum Noise & Decoherence**: Applied error mitigation strategies to improve simulation accuracy on NISQ devices.
+- **Hybrid Integration**: Developed a bridge between quantum outputs and classical financial models to extract actionable insights.
 
-Quantum-Powered Simulations: Uses quantum superposition to evaluate multiple stock price trajectories in parallel.
+## Key Outcomes / Metrics
+- **Reduced Computational Overhead**: Demonstrated parallel simulation of stock paths compared to classical Monte Carlo methods.
+- **Built Functional Prototype**: Delivered a fully working hybrid application, visualizing real-time quantum-driven stock simulations.
+- **Optimized for Current Hardware**: Tailored quantum circuits to run efficiently on today's noisy intermediate-scale quantum (NISQ) devices.
 
-Enhanced Brownian Motion Modeling: Encodes stochastic paths into qubits for a more comprehensive market representation.
+## How to Run It
+1. Clone the repository:
+   
+       git clone https://github.com/your-repo/qustoch.git
+       cd qustoch
 
-Interactive Visualization: A web-based dashboard displays simulation results in real time.
+2. Install required dependencies:
+   
+       pip install -r requirements.txt
 
-How It Works
+3. Run the backend server:
+   
+       python app.py
 
-Instead of iterating through possible stock price movements as in classical Monte Carlo simulations, QuStoch leverages quantum computing principles to represent multiple market states simultaneously:
+4. Access the dashboard at `http://localhost:5000`.
 
-Quantum Computation: A quantum circuit encodes stochastic paths into qubits, utilizing Hadamard and controlled rotation gates to model stock price variations.
+*Note: Quantum simulation runs may require a local or cloud-based quantum simulator.*
 
-Classical Processing: The quantum-generated results are analyzed in Python, calibrated against historical stock trends, and processed for meaningful insights.
-
-Web-Based Visualization: The output is presented in an interactive web application built with Flask, JavaScript, and Matplotlib for dynamic graphing.
-
-Technologies Used
-
-Quantum Frameworks: Quantum circuits for stochastic modeling.
-
-Python Backend: Processes quantum-generated data and performs statistical analysis.
-
-Web Frontend: Flask, HTML/CSS/JavaScript for user interaction.
-
-Data Visualization: Matplotlib for graphing stock behavior.
-
-Challenges and Solutions
-
-Efficient Quantum Simulation: Designing a practical quantum algorithm for Brownian motion required careful probability amplitude mapping.
-
-Quantum Noise & Decoherence: Implemented error mitigation strategies to enhance accuracy.
-
-Hybrid Integration: Combined quantum-generated data with classical analytics for meaningful financial insights.
-
-Achievements
-
-We successfully built a prototype that demonstrates the potential of quantum computing in financial modeling. Key milestones include:
-
-Implementing a parallelized quantum approach to stochastic simulations.
-
-Developing an interactive tool for real-time market analysis.
-
-Optimizing our quantum circuit for execution on current NISQ devices.
-
-Key Learnings
-
-Through this project, we gained valuable insights into:
-
-The applications of quantum computing in finance, particularly in probabilistic modeling.
-
-The challenges of designing quantum circuits for stochastic simulations.
-
-The importance of hybrid quantum-classical models in practical applications.
-
-Future Plans
-
-We aim to further refine QuStoch with:
-
-Improved Quantum Algorithms: Enhancing accuracy and scalability with quantum error correction techniques.
-
-Exploring Alternative Models: Investigating quantum walks for financial simulations.
-
-Expanded Web Features: Adding real-time stock tracking and advanced analytics.
-
-As quantum technology progresses, QuStoch has the potential to redefine financial forecasting by leveraging the efficiency of quantum computing.
-
-Get Started
-
-Interested in experimenting with quantum-enhanced market simulations? Clone the repository and explore QuStoch!
-
-git clone https://github.com/your-repo/qustoch.git
-cd qustoch
-
-Stay tuned for updates as we continue to push the boundaries of quantum finance!
+## Links
+- [GitHub Repository](https://github.com/your-repo/qustoch)
+- [Devpost Submission](#) (Add if available)
+- [Live Demo](#) (Add if available)
