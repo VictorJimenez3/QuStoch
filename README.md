@@ -28,8 +28,8 @@ QuStoch is a quantum-accelerated stock market simulator that integrates quantum 
 ## How to Run It
 1. Clone the repository:
    
-       git clone https://github.com/your-repo/qustoch.git
-       cd qustoch
+       git clone https://github.com/VictorJimenez3/QuStoch.git
+       cd QuStoch
 
 2. Install required dependencies:
    
