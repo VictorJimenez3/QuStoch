@@ -44,6 +44,6 @@ QuStoch is a quantum-accelerated stock market simulator that integrates quantum 
 *Note: Quantum simulation runs may require a local or cloud-based quantum simulator.*
 
 ## Links
-- [GitHub Repository](https://github.com/your-repo/qustoch)
-- [Devpost Submission](#) (Add if available)
-- [Live Demo](#) (Add if available)
+- [GitHub Repository](https://github.com/VictorJimenez3/QuStoch)
+- [Devpost Submission]((https://devpost.com/software/qustoch)) (Add if available)
+- [Quick Video Demo](https://www.youtube.com/watch?v=w15F0oFqkak&embeds_referring_euri=https%3A%2F%2Fdevpost.com%2F&source_ve_path=OTY3MTQ) (Add if available)
